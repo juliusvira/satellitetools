@@ -10,6 +10,7 @@ Created on Thu Feb  6 15:24:12 2020
 """
 import datetime
 from functools import reduce
+from os import environ
 
 import ee
 import numpy as np
@@ -24,13 +25,13 @@ from satellitetools.common.sentinel2 import (
     filter_s2_qi_dataframe,
 )
 
-ee.Initialize()
+if "EEPROJECT" in environ:
+    ee.Initialize(project=environ["EEPROJECT"])
+else:
+    ee.Initialize()
 
 NO_DATA = -99999
 GEE_DATASET = "COPERNICUS/S2_SR_HARMONIZED"
-
-GEE_DATASET = "COPERNICUS/S2_SR_HARMONIZED"
-
 
 def ee_get_s2_quality_info(AOIs, req_params):
     """Get S2 quality information from GEE.

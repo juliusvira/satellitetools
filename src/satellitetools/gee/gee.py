@@ -28,6 +28,15 @@ NO_DATA = -99999
 
 GEE_DATASET = "COPERNICUS/S2_SR_HARMONIZED"
 
+def get_ee_geom(shapely_geometry):
+    try:
+        return ee.Geometry.Polygon(
+            list(shapely_geometry.exterior.coords)
+        )
+    except AttributeError:
+        return ee.Geometry.MultiPolygon(
+            [get_ee_geom(g) for g in shapely_geometry.geoms]
+        )
 
 def ee_get_s2_quality_info(AOIs, req_params):
     """Get S2 quality information from GEE.
@@ -55,7 +64,7 @@ def ee_get_s2_quality_info(AOIs, req_params):
 
     features = [
         ee.Feature(
-            ee.Geometry.Polygon(list(a.geometry.exterior.coords)), {"name": a.name}
+            get_ee_geom(a.geometry), {"name": a.name}
         )
         for a in AOIs
     ]
@@ -217,7 +226,7 @@ def ee_get_s2_data(
         image_list = [ee.Image(asset_id) for asset_id in full_assetids]
         crs = filtered_qi["projection"].values[0]["crs"]
         feature = ee.Feature(
-            ee.Geometry.Polygon(list(a.geometry.exterior.coords)),
+            get_ee_geom(a.geometry),
             {"name": a.name, "image_list": image_list},
         )
 
